@@ -1,10 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { Shield, Lock, Sparkles, Fingerprint, ArrowRight } from "lucide-react";
+import { Shield, Lock, Sparkles, Fingerprint, ArrowRight, LayoutDashboard } from "lucide-react";
 import { NavLink } from "react-router";
+import useAuth from "@/auth/store";
 
 export default function AuthAppHome() {
+  const checkLogin = useAuth((state) => state.checkLogin);
+  const user = useAuth((state) => state.user);
+  const isLoggedIn = checkLogin();
+
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors overflow-hidden">
       {/* Hero Section */}
@@ -40,8 +45,9 @@ export default function AuthAppHome() {
           transition={{ delay: 0.3, duration: 0.8 }}
           className="relative mt-6 max-w-2xl text-lg md:text-xl text-muted-foreground"
         >
-          The next‑generation authentication platform built for modern apps.
-          JWT tokens, OAuth2 social login, and role-based access — all in one.
+          {isLoggedIn
+            ? `Welcome back, ${user?.name || "User"}! Your dashboard is ready.`
+            : "The next‑generation authentication platform built for modern apps. JWT tokens, OAuth2 social login, and role-based access — all in one."}
         </motion.p>
 
         <motion.div
@@ -50,21 +56,44 @@ export default function AuthAppHome() {
           transition={{ delay: 0.5, duration: 0.8 }}
           className="relative mt-10 flex gap-4"
         >
-          <NavLink to="/signup">
-            <Button size="lg" className="rounded-2xl text-lg px-6 cursor-pointer group">
-              Get Started
-              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </NavLink>
-          <NavLink to="/services">
-            <Button
-              size="lg"
-              variant="outline"
-              className="rounded-2xl text-lg px-6 border-border cursor-pointer"
-            >
-              Learn More
-            </Button>
-          </NavLink>
+          {isLoggedIn ? (
+            <>
+              <NavLink to="/dashboard">
+                <Button size="lg" className="rounded-2xl text-lg px-6 cursor-pointer group">
+                  <LayoutDashboard className="w-4 h-4 mr-2" />
+                  Go to Dashboard
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </NavLink>
+              <NavLink to="/dashboard/profile">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="rounded-2xl text-lg px-6 border-border cursor-pointer"
+                >
+                  View Profile
+                </Button>
+              </NavLink>
+            </>
+          ) : (
+            <>
+              <NavLink to="/signup">
+                <Button size="lg" className="rounded-2xl text-lg px-6 cursor-pointer group">
+                  Get Started
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </NavLink>
+              <NavLink to="/services">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="rounded-2xl text-lg px-6 border-border cursor-pointer"
+                >
+                  Learn More
+                </Button>
+              </NavLink>
+            </>
+          )}
         </motion.div>
       </section>
 
@@ -115,17 +144,30 @@ export default function AuthAppHome() {
 
       {/* CTA Section */}
       <section className="py-28 px-6 text-center bg-card/50 backdrop-blur-lg border-t border-border">
-        <h2 className="text-4xl font-bold">Start Securing Your App Today</h2>
+        <h2 className="text-4xl font-bold">
+          {isLoggedIn
+            ? "Your Account is Protected"
+            : "Start Securing Your App Today"}
+        </h2>
         <p className="mt-4 max-w-xl mx-auto text-muted-foreground text-lg">
-          Join thousands of developers already building with our authentication
-          system.
+          {isLoggedIn
+            ? "Manage your profile, update your security settings, and stay in control."
+            : "Join thousands of developers already building with our authentication system."}
         </p>
 
-        <NavLink to="/signup">
-          <Button size="lg" className="mt-8 px-8 text-lg rounded-2xl cursor-pointer">
-            Create Account
-          </Button>
-        </NavLink>
+        {isLoggedIn ? (
+          <NavLink to="/dashboard/profile">
+            <Button size="lg" className="mt-8 px-8 text-lg rounded-2xl cursor-pointer">
+              Manage Account
+            </Button>
+          </NavLink>
+        ) : (
+          <NavLink to="/signup">
+            <Button size="lg" className="mt-8 px-8 text-lg rounded-2xl cursor-pointer">
+              Create Account
+            </Button>
+          </NavLink>
+        )}
       </section>
 
       {/* Extra Section — Why Choose Us */}
@@ -180,9 +222,15 @@ export default function AuthAppHome() {
             <NavLink to="/services" className="hover:text-primary transition-colors">
               Services
             </NavLink>
-            <NavLink to="/login" className="hover:text-primary transition-colors">
-              Login
-            </NavLink>
+            {isLoggedIn ? (
+              <NavLink to="/dashboard" className="hover:text-primary transition-colors">
+                Dashboard
+              </NavLink>
+            ) : (
+              <NavLink to="/login" className="hover:text-primary transition-colors">
+                Login
+              </NavLink>
+            )}
           </div>
         </div>
       </footer>

@@ -1,5 +1,6 @@
 package com.substring.auth.app.auth.controllers;
 
+import com.substring.auth.app.auth.payload.ChangePasswordRequest;
 import com.substring.auth.app.auth.payload.LoginRequest;
 import com.substring.auth.app.auth.payload.RefreshTokenRequest;
 import com.substring.auth.app.auth.payload.TokenResponse;
@@ -234,6 +235,14 @@ public class AuthController {
         return Optional.empty();
 
 
+    }
+
+
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(@RequestBody ChangePasswordRequest request) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        authService.changePassword(currentUser.getId().toString(), request.currentPassword(), request.newPassword());
+        return ResponseEntity.ok().build();
     }
 
 

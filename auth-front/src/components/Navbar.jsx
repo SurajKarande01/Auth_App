@@ -43,6 +43,11 @@ function Navbar() {
                 <NavLink to="/dashboard" end className={linkClass}>
                   Dashboard
                 </NavLink>
+                {user?.roles?.some(r => r.name === 'ROLE_ADMIN' || r === 'ROLE_ADMIN') && (
+                  <NavLink to="/dashboard/admin" className={linkClass}>
+                    Admin Panel
+                  </NavLink>
+                )}
                 <NavLink to="/dashboard/profile" className={linkClass}>
                   {user?.name || "Profile"}
                 </NavLink>
@@ -127,6 +132,15 @@ function Navbar() {
                   >
                     Dashboard
                   </NavLink>
+                  {user?.roles?.some(r => r.name === 'ROLE_ADMIN' || r === 'ROLE_ADMIN') && (
+                    <NavLink
+                      to="/dashboard/admin"
+                      className={mobileLinkClass}
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      Admin Panel
+                    </NavLink>
+                  )}
                   <NavLink
                     to="/dashboard/profile"
                     className={mobileLinkClass}

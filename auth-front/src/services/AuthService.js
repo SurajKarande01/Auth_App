@@ -31,4 +31,45 @@ export const refreshToken = async () => {
   return response.data;
 };
 
-//apis
+// ===== Self-service APIs =====
+
+// get current user's profile (via /me endpoint)
+export const getMyProfile = async () => {
+  const response = await apiClient.get(`/users/me`);
+  return response.data;
+};
+
+// update current user's profile
+export const updateMyProfile = async (userData) => {
+  const response = await apiClient.put(`/users/me`, userData);
+  return response.data;
+};
+
+// delete current user's account
+export const deleteMyAccount = async () => {
+  const response = await apiClient.delete(`/users/me`);
+  return response.data;
+};
+
+// change password
+export const changePassword = async (currentPassword, newPassword) => {
+  const response = await apiClient.post(`/auth/change-password`, {
+    currentPassword,
+    newPassword,
+  });
+  return response.data;
+};
+
+// ===== Admin APIs =====
+
+// get all users
+export const getAllUsers = async () => {
+  const response = await apiClient.get(`/users`);
+  return response.data;
+};
+
+// delete any user
+export const deleteUser = async (userId) => {
+  const response = await apiClient.delete(`/users/${userId}`);
+  return response.data;
+};

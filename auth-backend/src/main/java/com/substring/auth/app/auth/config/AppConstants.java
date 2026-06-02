@@ -14,6 +14,12 @@ public class AppConstants {
             "/api/v1/users/**"
     };
 
+    //self-service endpoints accessible by any authenticated user
+    public static final String[] AUTH_SELF_SERVICE_URLS = {
+            "/api/v1/users/me",
+            "/api/v1/users/me/**"
+    };
+
     public static final String[] AUTH_GUEST_URLS= {
 
     };

@@ -11,6 +11,7 @@ import RootLayout from "./pages/RootLayout.jsx";
 import Userlayout from "./pages/users/Userlayout.jsx";
 import Userhome from "./pages/users/Userhome.jsx";
 import Userprofile from "./pages/users/Userprofile.jsx";
+import AdminPanel from "./pages/admin/AdminPanel.jsx";
 import OAuthSuccess from "./pages/OAuthSuccess.jsx";
 import OAuthFailure from "./pages/OAuthFailure.jsx";
 import NotFound from "./pages/NotFound.jsx";
@@ -29,7 +30,7 @@ createRoot(document.getElementById("root")).render(
         <Route path="/dashboard" element={<Userlayout />}>
           <Route index element={<Userhome />} />
           <Route path="profile" element={<Userprofile />} />
-          {/* .... */}
+          <Route path="admin" element={<AdminPanel />} />
         </Route>
         <Route path="oauth/success" element={<OAuthSuccess />} />
         <Route path="oauth/failure" element={<OAuthFailure />} />
