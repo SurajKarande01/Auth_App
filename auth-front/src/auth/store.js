@@ -10,13 +10,17 @@ const useAuth = create(
     (set, get) => ({
       accessToken: null,
       user: null,
+      permissions: [],
       authStatus: false,
       authLoading: false,
 
       changeLocalLoginData: (accessToken, user, authStatus) => {
+        // Extract permissions from user roles if available
+        const permissions = extractPermissions(user);
         set({
           accessToken,
           user,
+          permissions,
           authStatus,
         });
       },
@@ -26,9 +30,11 @@ const useAuth = create(
         try {
           const loginResponseData = await loginUser(loginData);
           console.log(loginResponseData);
+          const permissions = extractPermissions(loginResponseData.user);
           set({
             accessToken: loginResponseData.accessToken,
             user: loginResponseData.user,
+            permissions,
             authStatus: true,
           });
           return loginResponseData;
@@ -56,6 +62,7 @@ const useAuth = create(
         set({
           accessToken: null,
           user: null,
+          permissions: [],
           authLoading: false,
           authStatus: false,
         });
@@ -69,5 +76,23 @@ const useAuth = create(
     { name: LOCAL_KEY }
   )
 );
+
+/**
+ * Extract permissions from user's roles.
+ * Works with both role objects {name, permissions: [{name}]} and simple strings.
+ */
+function extractPermissions(user) {
+  if (!user?.roles || !Array.isArray(user.roles)) return [];
+  const perms = new Set();
+  user.roles.forEach((role) => {
+    if (role.permissions && Array.isArray(role.permissions)) {
+      role.permissions.forEach((p) => {
+        const name = typeof p === "string" ? p : p.name;
+        if (name) perms.add(name);
+      });
+    }
+  });
+  return Array.from(perms);
+}
 
 export default useAuth;

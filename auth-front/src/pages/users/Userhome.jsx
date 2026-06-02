@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import {
   User,
@@ -13,9 +14,14 @@ import {
   Fingerprint,
   BarChart3,
   TrendingUp,
+  Crown,
+  Users,
+  ArrowRight,
 } from "lucide-react";
 import useAuth from "@/auth/store";
+import { getUserRoles, userHasRole } from "@/auth/rbac";
 import { useMemo } from "react";
+import { NavLink } from "react-router";
 
 function Userhome() {
   const user = useAuth((state) => state.user);
@@ -167,11 +173,24 @@ function Userhome() {
           <p className="text-muted-foreground">
             Welcome back, <span className="text-primary font-medium">{user.name}</span>
           </p>
-          {analytics.roles.includes("ADMIN") && (
-            <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-bold border border-primary/30 uppercase">
-              Admin
-            </span>
-          )}
+          {analytics.roles.map((role) => {
+            const isElevated = role === "ADMIN" || role === "SUPER_ADMIN";
+            const roleColor = 
+              role === "SUPER_ADMIN" ? "bg-amber-500/15 text-amber-500 border-amber-500/30" :
+              role === "ADMIN" ? "bg-primary/15 text-primary border-primary/30" :
+              role === "MODERATOR" ? "bg-cyan-500/15 text-cyan-500 border-cyan-500/30" :
+              role === "USER" ? "bg-emerald-500/15 text-emerald-500 border-emerald-500/30" :
+              "bg-muted text-muted-foreground border border-border";
+            return (
+              <span
+                key={role}
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase border ${roleColor}`}
+              >
+                {isElevated ? <Crown className="w-3 h-3" /> : null}
+                {role}
+              </span>
+            );
+          })}
         </div>
       </motion.div>
 
@@ -456,6 +475,60 @@ function Userhome() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Admin Quick Actions — only visible to admins */}
+      {(userHasRole(user, "ADMIN") || userHasRole(user, "SUPER_ADMIN")) && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+        >
+          <Card className="bg-card/70 backdrop-blur-lg border-primary/20 rounded-2xl shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Crown className="w-5 h-5 text-primary" />
+                Admin Quick Actions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <NavLink to="/dashboard/admin">
+                  <div className="group p-4 rounded-xl border border-border hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <Users className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-sm">Manage Users</h4>
+                          <p className="text-xs text-muted-foreground">View, edit & delete users</p>
+                        </div>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                    </div>
+                  </div>
+                </NavLink>
+                <NavLink to="/dashboard/profile">
+                  <div className="group p-4 rounded-xl border border-border hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <KeyRound className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-sm">Roles & Permissions</h4>
+                          <p className="text-xs text-muted-foreground">View your RBAC config</p>
+                        </div>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                    </div>
+                  </div>
+                </NavLink>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
     </div>
   );
 }

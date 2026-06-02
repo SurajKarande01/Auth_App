@@ -9,7 +9,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.Instant;
 import java.util.*;
 
-
 @Getter
 @Setter
 @AllArgsConstructor
@@ -31,9 +30,6 @@ public class User implements UserDetails {
     private boolean enable = true;
     private Instant createdAt = Instant.now();
     private Instant updatedAt = Instant.now();
-
-
-
 
     @Enumerated(EnumType.STRING)
     private Provider provider = Provider.LOCAL;
@@ -59,10 +55,16 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles
-                .stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName()))
-                .toList();
+        Set<GrantedAuthority> authorities = new HashSet<>();
+        // Add roles as ROLE_xxx authorities (for hasRole() checks)
+        roles.forEach(role ->
+                authorities.add(new SimpleGrantedAuthority(role.getName())));
+        // Add permissions as direct authorities (for hasAuthority() checks)
+        roles.stream()
+                .filter(r -> r.getPermissions() != null)
+                .flatMap(r -> r.getPermissions().stream())
+                .forEach(p -> authorities.add(new SimpleGrantedAuthority(p.getName())));
+        return authorities;
     }
 
     @Override

@@ -69,8 +69,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     if (user.isEnable()) {
                         // user mil chuka hai database se
-                        List<GrantedAuthority> authorities = user.getRoles() == null ? List.of() : user.getRoles().stream().map(role -> (GrantedAuthority) new SimpleGrantedAuthority(role.getName())).toList();
-                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         //final line : to set the authentication to security context
                         if (SecurityContextHolder.getContext().getAuthentication() == null)

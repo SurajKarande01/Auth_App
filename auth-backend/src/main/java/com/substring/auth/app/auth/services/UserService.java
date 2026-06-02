@@ -22,7 +22,9 @@ public interface UserService {
     //get all users
     Iterable<UserDto> getAllUsers();
 
-    // user service se related __
+    // ===== Role Assignment =====
 
+    UserDto assignRole(String userId, String roleName);
 
+    UserDto revokeRole(String userId, String roleName);
 }

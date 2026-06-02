@@ -22,10 +22,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
-
     private final RoleRepository roleRepository;
 
     @Override
@@ -37,19 +35,12 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmail(userDto.getEmail())) {
             throw new IllegalArgumentException("User with given email already exists");
         }
-        // if you have extra checks __put here...
         User user = modelMapper.map(userDto, User.class);
         user.setProvider(userDto.getProvider() != null ? userDto.getProvider() : Provider.LOCAL);
-        //role assign here to user___for authorization
 
-        //TODO:
-        //assign the default role
-
-        Role role = roleRepository.findByName("ROLE_" + AppConstants.GUEST_ROLE).orElse(null);
+        //assign the default role (ROLE_USER)
+        Role role = roleRepository.findByName("ROLE_" + AppConstants.USER_ROLE).orElse(null);
         user.getRoles().add(role);
-
-
-
 
         User savedUser = userRepository.save(user);
         return modelMapper.map(savedUser, UserDto.class);
@@ -57,7 +48,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getUserByEmail(String email) {
-
         User user = userRepository
                 .findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with given email id "));
@@ -103,5 +93,36 @@ public class UserServiceImpl implements UserService {
                 .stream()
                 .map(user -> modelMapper.map(user, UserDto.class))
                 .toList();
+    }
+
+    // ===== Role Assignment =====
+
+    @Override
+    @Transactional
+    public UserDto assignRole(String userId, String roleName) {
+        UUID uId = UserHelper.parseUUID(userId);
+        User user = userRepository.findById(uId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        String fullRoleName = roleName.startsWith("ROLE_") ? roleName : "ROLE_" + roleName;
+        Role role = roleRepository.findByName(fullRoleName)
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + fullRoleName));
+
+        user.getRoles().add(role);
+        User updated = userRepository.save(user);
+        return modelMapper.map(updated, UserDto.class);
+    }
+
+    @Override
+    @Transactional
+    public UserDto revokeRole(String userId, String roleName) {
+        UUID uId = UserHelper.parseUUID(userId);
+        User user = userRepository.findById(uId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        String fullRoleName = roleName.startsWith("ROLE_") ? roleName : "ROLE_" + roleName;
+        user.getRoles().removeIf(r -> r.getName().equals(fullRoleName));
+        User updated = userRepository.save(user);
+        return modelMapper.map(updated, UserDto.class);
     }
 }

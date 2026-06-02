@@ -1,13 +1,14 @@
 import apiClient from "@/config/apiClient";
+
+// ===== Auth APIs =====
+
 //register function
 export const registerUser = async (signupData) => {
-  // api  call to server to save data
   const response = await apiClient.post(`/auth/register`, signupData);
   return response.data;
 };
 
 //login
-
 export const loginUser = async (loginData) => {
   const response = await apiClient.post("/auth/login", loginData);
   return response.data;
@@ -25,7 +26,6 @@ export const getCurrentUser = async (emailId) => {
 };
 
 //refresh token
-
 export const refreshToken = async () => {
   const response = await apiClient.post(`/auth/refresh`);
   return response.data;
@@ -60,7 +60,7 @@ export const changePassword = async (currentPassword, newPassword) => {
   return response.data;
 };
 
-// ===== Admin APIs =====
+// ===== Admin User APIs =====
 
 // get all users
 export const getAllUsers = async () => {
@@ -71,5 +71,55 @@ export const getAllUsers = async () => {
 // delete any user
 export const deleteUser = async (userId) => {
   const response = await apiClient.delete(`/users/${userId}`);
+  return response.data;
+};
+
+// assign role to user
+export const assignRoleToUser = async (userId, roleName) => {
+  const response = await apiClient.post(`/users/${userId}/roles/${roleName}`);
+  return response.data;
+};
+
+// revoke role from user
+export const revokeRoleFromUser = async (userId, roleName) => {
+  const response = await apiClient.delete(`/users/${userId}/roles/${roleName}`);
+  return response.data;
+};
+
+// ===== Role APIs =====
+
+export const getAllRoles = async () => {
+  const response = await apiClient.get(`/roles`);
+  return response.data;
+};
+
+// ===== Permission APIs =====
+
+export const getAllPermissions = async () => {
+  const response = await apiClient.get(`/permissions`);
+  return response.data;
+};
+
+// ===== Audit Log APIs =====
+
+export const getAuditLogs = async (page = 0, size = 20) => {
+  const response = await apiClient.get(`/audit-logs?page=${page}&size=${size}`);
+  return response.data;
+};
+
+export const getAuditLogsByUser = async (userId, page = 0, size = 20) => {
+  const response = await apiClient.get(`/audit-logs/user/${userId}?page=${page}&size=${size}`);
+  return response.data;
+};
+
+// assign permission to role
+export const assignPermission = async (roleId, permissionId) => {
+  const response = await apiClient.post(`/roles/${roleId}/permissions/${permissionId}`);
+  return response.data;
+};
+
+// remove permission from role
+export const removePermission = async (roleId, permissionId) => {
+  const response = await apiClient.delete(`/roles/${roleId}/permissions/${permissionId}`);
   return response.data;
 };

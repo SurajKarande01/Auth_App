@@ -1,4 +1,3 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
@@ -16,6 +15,7 @@ import OAuthSuccess from "./pages/OAuthSuccess.jsx";
 import OAuthFailure from "./pages/OAuthFailure.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
+import { RoleGuard } from "./auth/rbac.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -30,7 +30,14 @@ createRoot(document.getElementById("root")).render(
         <Route path="/dashboard" element={<Userlayout />}>
           <Route index element={<Userhome />} />
           <Route path="profile" element={<Userprofile />} />
-          <Route path="admin" element={<AdminPanel />} />
+          <Route
+            path="admin"
+            element={
+              <RoleGuard role={["ADMIN", "SUPER_ADMIN"]}>
+                <AdminPanel />
+              </RoleGuard>
+            }
+          />
         </Route>
         <Route path="oauth/success" element={<OAuthSuccess />} />
         <Route path="oauth/failure" element={<OAuthFailure />} />

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button } from "./ui/button";
 import { NavLink, useNavigate } from "react-router";
 import useAuth from "@/auth/store";
+import { userHasRole, getUserRoles } from "@/auth/rbac";
 import { Menu, X, Shield } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -11,6 +12,25 @@ function Navbar() {
   const logout = useAuth((state) => state.logout);
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const isLoggedIn = checkLogin();
+  const isAdmin = isLoggedIn && (userHasRole(user, "ADMIN") || userHasRole(user, "SUPER_ADMIN"));
+  const roles = isLoggedIn ? getUserRoles(user) : [];
+
+  const getRoleBadgeStyle = (role) => {
+    switch (role) {
+      case "SUPER_ADMIN":
+        return "bg-amber-500/15 text-amber-500 border border-amber-500/25";
+      case "ADMIN":
+        return "bg-primary/15 text-primary border border-primary/25";
+      case "MODERATOR":
+        return "bg-cyan-500/15 text-cyan-500 border border-cyan-500/25";
+      case "USER":
+        return "bg-emerald-500/15 text-emerald-500 border border-emerald-500/25";
+      default:
+        return "bg-muted text-muted-foreground border border-border";
+    }
+  };
 
   const linkClass = ({ isActive }) =>
     `text-sm font-medium transition-colors hover:text-primary ${
@@ -38,18 +58,25 @@ function Navbar() {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-6">
-            {checkLogin() ? (
+            {isLoggedIn ? (
               <>
                 <NavLink to="/dashboard" end className={linkClass}>
                   Dashboard
                 </NavLink>
-                {user?.roles?.some(r => r.name === 'ROLE_ADMIN' || r === 'ROLE_ADMIN') && (
+                {isAdmin && (
                   <NavLink to="/dashboard/admin" className={linkClass}>
                     Admin Panel
                   </NavLink>
                 )}
                 <NavLink to="/dashboard/profile" className={linkClass}>
-                  {user?.name || "Profile"}
+                  <span className="flex items-center gap-1.5">
+                    {user?.name || "Profile"}
+                    {roles.length > 0 && (
+                      <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold uppercase leading-none ${getRoleBadgeStyle(roles[0])}`}>
+                        {roles[0]}
+                      </span>
+                    )}
+                  </span>
                 </NavLink>
                 <Button
                   onClick={() => {
@@ -122,7 +149,7 @@ function Navbar() {
             className="md:hidden border-t border-border overflow-hidden"
           >
             <div className="px-4 py-3 space-y-1">
-              {checkLogin() ? (
+              {isLoggedIn ? (
                 <>
                   <NavLink
                     to="/dashboard"
@@ -132,7 +159,7 @@ function Navbar() {
                   >
                     Dashboard
                   </NavLink>
-                  {user?.roles?.some(r => r.name === 'ROLE_ADMIN' || r === 'ROLE_ADMIN') && (
+                  {isAdmin && (
                     <NavLink
                       to="/dashboard/admin"
                       className={mobileLinkClass}
@@ -146,7 +173,14 @@ function Navbar() {
                     className={mobileLinkClass}
                     onClick={() => setMobileOpen(false)}
                   >
-                    {user?.name || "Profile"}
+                    <span className="flex items-center gap-2">
+                      {user?.name || "Profile"}
+                      {roles.length > 0 && (
+                        <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold uppercase leading-none ${getRoleBadgeStyle(roles[0])}`}>
+                          {roles[0]}
+                        </span>
+                      )}
+                    </span>
                   </NavLink>
                   <button
                     onClick={() => {

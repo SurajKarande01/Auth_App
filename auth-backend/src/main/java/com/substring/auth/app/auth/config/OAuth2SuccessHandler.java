@@ -1,9 +1,12 @@
 package com.substring.auth.app.auth.config;
 
+import com.substring.auth.app.auth.config.AppConstants;
 import com.substring.auth.app.auth.entities.Provider;
 import com.substring.auth.app.auth.entities.RefreshToken;
+import com.substring.auth.app.auth.entities.Role;
 import com.substring.auth.app.auth.entities.User;
 import com.substring.auth.app.auth.repositories.RefreshTokenRepository;
+import com.substring.auth.app.auth.repositories.RoleRepository;
 import com.substring.auth.app.auth.repositories.UserRepository;
 import com.substring.auth.app.auth.services.impl.CookieService;
 import com.substring.auth.app.auth.services.impl.JwtService;
@@ -34,6 +37,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     private final JwtService jwtService;
     private final CookieService cookieService;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final RoleRepository roleRepository;
 
     @Value("${app.auth.frontend.success-redirect}")
     private String frontEndSuccessUrl;
@@ -78,6 +82,14 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
                 user = userRepository.findByEmail(email).orElseGet(() -> userRepository.save(newUser));
 
+                // Assign default ROLE_USER to new OAuth users
+                if (user.getRoles() == null || user.getRoles().isEmpty()) {
+                    roleRepository.findByName("ROLE_" + AppConstants.USER_ROLE).ifPresent(r -> {
+                        user.setRoles(java.util.Set.of(r));
+                        userRepository.save(user);
+                    });
+                }
+
             }
 
             case "github" -> {
@@ -99,6 +111,14 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                         .providerId(githubId)
                         .build();
                 user = userRepository.findByEmail(email).orElseGet(() -> userRepository.save(newUser));
+
+                // Assign default ROLE_USER to new OAuth users
+                if (user.getRoles() == null || user.getRoles().isEmpty()) {
+                    roleRepository.findByName("ROLE_" + AppConstants.USER_ROLE).ifPresent(r -> {
+                        user.setRoles(java.util.Set.of(r));
+                        userRepository.save(user);
+                    });
+                }
 
             }
 

@@ -12,6 +12,7 @@ import com.substring.auth.app.auth.repositories.UserRepository;
 import com.substring.auth.app.auth.services.impl.CookieService;
 import com.substring.auth.app.auth.services.impl.JwtService;
 import com.substring.auth.app.auth.services.AuthService;
+import com.substring.auth.app.auth.services.AuditService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -47,10 +48,11 @@ public class AuthController {
     private final JwtService jwtService;
     private final ModelMapper mapper;
     private final CookieService cookieService;
+    private final AuditService auditService;
 
 
     @PostMapping("/login")
-    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response, HttpServletRequest request) {
         // authenticate — throws BadCredentialsException on failure
         authenticate(loginRequest);
         User user = userRepository.findByEmail(loginRequest.email()).orElseThrow(() -> new BadCredentialsException("Invalid Username or Password"));
@@ -83,6 +85,10 @@ public class AuthController {
         cookieService.addNoStoreHeaders(response);
 
         TokenResponse tokenResponse = TokenResponse.of(accessToken, refreshToken, jwtService.getAccessTtlSeconds(), mapper.map(user, UserDto.class));
+
+        // Audit: successful login
+        auditService.log(user.getId(), "LOGIN", "/api/v1/auth/login", request.getRemoteAddr(), "SUCCESS");
+
         return ResponseEntity.ok(tokenResponse);
 
     }
@@ -185,6 +191,16 @@ public class AuthController {
         cookieService.clearRefreshCookie(response);
         cookieService.addNoStoreHeaders(response);
         SecurityContextHolder.clearContext();
+
+        // Audit: logout
+        // user might be null if token was invalid, so we try to extract userId
+        try {
+            var auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getPrincipal() instanceof User u) {
+                auditService.log(u.getId(), "LOGOUT", "/api/v1/auth/logout", request.getRemoteAddr(), "SUCCESS");
+            }
+        } catch (Exception ignored) {}
+
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -239,9 +255,13 @@ public class AuthController {
 
 
     @PostMapping("/change-password")
-    public ResponseEntity<Void> changePassword(@RequestBody ChangePasswordRequest request) {
+    public ResponseEntity<Void> changePassword(@RequestBody ChangePasswordRequest request, HttpServletRequest httpRequest) {
         User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         authService.changePassword(currentUser.getId().toString(), request.currentPassword(), request.newPassword());
+
+        // Audit: password change
+        auditService.log(currentUser.getId(), "PASSWORD_CHANGE", "/api/v1/auth/change-password", httpRequest.getRemoteAddr(), "SUCCESS");
+
         return ResponseEntity.ok().build();
     }
 

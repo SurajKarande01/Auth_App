@@ -1,5 +1,6 @@
 package com.substring.auth.app.auth.services.impl;
 
+import com.substring.auth.app.auth.entities.Permission;
 import com.substring.auth.app.auth.entities.Role;
 import com.substring.auth.app.auth.entities.User;
 import io.jsonwebtoken.*;
@@ -48,6 +49,16 @@ public class JwtService {
         Instant now = Instant.now();
         List<String> roles = user.getRoles() == null ? List.of() :
                 user.getRoles().stream().map(Role::getName).toList();
+
+        // Collect permissions from all roles
+        List<String> permissions = user.getRoles() == null ? List.of() :
+                user.getRoles().stream()
+                        .filter(r -> r.getPermissions() != null)
+                        .flatMap(r -> r.getPermissions().stream())
+                        .map(Permission::getName)
+                        .distinct()
+                        .toList();
+
         return Jwts.builder()
                 .id(UUID.randomUUID().toString())
                 .subject(user.getId().toString())
@@ -57,6 +68,7 @@ public class JwtService {
                 .claims(Map.of(
                         "email", user.getEmail(),
                         "roles", roles,
+                        "permissions", permissions,
                         "typ", "access"
                 ))
                 .signWith(key, Jwts.SIG.HS512)
@@ -78,7 +90,6 @@ public class JwtService {
     }
 
     //parse the token
-
     public Jws<Claims> parse(String token) {
         return Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
     }
@@ -87,7 +98,6 @@ public class JwtService {
         Claims c = parse(token).getPayload();
         return "access".equals(c.get("typ"));
     }
-
 
     public boolean isRefreshToken(String token) {
         Claims c = parse(token).getPayload();
@@ -109,10 +119,15 @@ public class JwtService {
         return (List<String>) c.get("roles");
     }
 
+    @SuppressWarnings("unchecked")
+    public List<String> getPermissions(String token) {
+        Claims c = parse(token).getPayload();
+        Object perms = c.get("permissions");
+        return perms != null ? (List<String>) perms : List.of();
+    }
+
     public String getEmail(String token) {
         Claims c = parse(token).getPayload();
         return (String) c.get("email");
     }
-
-
 }

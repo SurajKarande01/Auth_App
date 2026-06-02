@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { motion, AnimatePresence } from "framer-motion";
 import useAuth from "@/auth/store";
+import { getUserRoles, userHasRole } from "@/auth/rbac";
 import { useState } from "react";
 import {
   updateMyProfile,
@@ -23,6 +24,9 @@ import {
   EyeOff,
   AlertTriangle,
   Shield,
+  KeyRound,
+  Crown,
+  UserCheck,
 } from "lucide-react";
 
 function Userprofile() {
@@ -33,6 +37,9 @@ function Userprofile() {
   const accessToken = useAuth((state) => state.accessToken);
   const logout = useAuth((state) => state.logout);
   const navigate = useNavigate();
+
+  const roles = getUserRoles(user);
+  const isAdmin = userHasRole(user, "ADMIN");
 
   // Edit profile state
   const [isEditing, setIsEditing] = useState(false);
@@ -127,6 +134,35 @@ function Userprofile() {
     .toUpperCase()
     .slice(0, 2) || "U";
 
+  // Role display config
+  const roleConfig = {
+    SUPER_ADMIN: {
+      icon: <Crown className="w-4 h-4 text-amber-500" />,
+      color: "bg-amber-500/15 text-amber-500 border-amber-500/30",
+      desc: "Root level administration — complete control over all users, roles, permissions, audit logs, and configurations",
+    },
+    ADMIN: {
+      icon: <Crown className="w-4 h-4" />,
+      color: "bg-primary/15 text-primary border-primary/30",
+      desc: "Administrative access — manage users, view audit logs, delete user profiles, and view reports",
+    },
+    MODERATOR: {
+      icon: <Shield className="w-4 h-4" />,
+      color: "bg-cyan-500/15 text-cyan-500 border-cyan-500/30",
+      desc: "Moderation access — view user directory, analyze reports, and moderate content",
+    },
+    USER: {
+      icon: <UserCheck className="w-4 h-4" />,
+      color: "bg-emerald-500/15 text-emerald-500 border-emerald-500/30",
+      desc: "Standard authenticated user — access personal dashboard and manage own profile details",
+    },
+    GUEST: {
+      icon: <UserCheck className="w-4 h-4 text-muted-foreground" />,
+      color: "bg-muted text-muted-foreground border-border",
+      desc: "Restricted guest access — read-only access to standard interface pages",
+    },
+  };
+
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-8">
       {/* Heading */}
@@ -165,6 +201,21 @@ function Userprofile() {
                   {initials}
                 </AvatarFallback>
               </Avatar>
+              {/* Role badges under avatar */}
+              <div className="flex items-center gap-2 flex-wrap justify-center">
+                {roles.map((role) => {
+                  const config = roleConfig[role] || roleConfig.GUEST;
+                  return (
+                    <span
+                      key={role}
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold uppercase border ${config.color}`}
+                    >
+                      {config.icon}
+                      {role}
+                    </span>
+                  );
+                })}
+              </div>
             </div>
 
             {/* User Details */}
@@ -259,6 +310,51 @@ function Userprofile() {
                   {saving ? "Saving..." : "Save Changes"}
                 </Button>
               </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Roles & Permissions Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+      >
+        <Card className="rounded-2xl shadow-md p-6">
+          <CardHeader>
+            <CardTitle className="text-xl flex items-center gap-2">
+              <KeyRound className="w-5 h-5 text-primary" />
+              Roles & Permissions
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {roles.length > 0 ? (
+              roles.map((role) => {
+                const config = roleConfig[role] || roleConfig.GUEST;
+                return (
+                  <div
+                    key={role}
+                    className="flex items-start gap-4 p-4 rounded-xl bg-muted/30 border border-border"
+                  >
+                    <div className={`p-2 rounded-lg ${config.color}`}>
+                      {config.icon}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-sm uppercase tracking-wide">
+                        {role}
+                      </h4>
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        {config.desc}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No roles assigned to your account.
+              </p>
             )}
           </CardContent>
         </Card>

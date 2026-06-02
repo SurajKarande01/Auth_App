@@ -42,47 +42,65 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    // ===== Admin endpoints =====
+    // ===== Admin endpoints (permission-guarded) =====
 
     //create user api
     @PostMapping
+    @PreAuthorize("hasAuthority('" + AppConstants.PERM_USER_WRITE + "')")
     public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(userDto));
     }
 
-    // get all user api
+    // get all users
     @GetMapping
+    @PreAuthorize("hasAuthority('" + AppConstants.PERM_USER_READ + "')")
     public ResponseEntity<Iterable<UserDto>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
     // get user by email
     @GetMapping("/email/{email}")
+    @PreAuthorize("hasAuthority('" + AppConstants.PERM_USER_READ + "')")
     public ResponseEntity<UserDto> getUserByEmail(@PathVariable("email") String email) {
         return ResponseEntity.ok(userService.getUserByEmail(email));
     }
 
     //delete user
-    //api/v1/users/{userId}
     @DeleteMapping("/{userId}")
+    @PreAuthorize("hasAuthority('" + AppConstants.PERM_USER_DELETE + "')")
     public void deleteUser(@PathVariable("userId") String userId) {
         userService.deleteUser(userId);
     }
 
     //update user
-    //api/v1/users/{userId}
     @PutMapping("/{userId}")
+    @PreAuthorize("hasAuthority('" + AppConstants.PERM_USER_WRITE + "')")
     public ResponseEntity<UserDto> updateUser(@RequestBody UserDto userDto, @PathVariable("userId") String userId) {
         return ResponseEntity.ok(userService.updateUser(userDto, userId));
     }
 
     //get user by id
-    //api/v1/users/{userId}
-    @PreAuthorize("hasRole('"+ AppConstants.ADMIN_ROLE +"')")
+    @PreAuthorize("hasAuthority('" + AppConstants.PERM_USER_READ + "')")
     @GetMapping("/{userId}")
     public ResponseEntity<UserDto> getUserById(@PathVariable("userId") String userId) {
         return ResponseEntity.ok(userService.getUserById(userId));
     }
 
-}
+    // ===== Role assignment endpoints =====
 
+    @PostMapping("/{userId}/roles/{roleName}")
+    @PreAuthorize("hasAuthority('" + AppConstants.PERM_ROLE_ASSIGN + "')")
+    public ResponseEntity<UserDto> assignRole(
+            @PathVariable("userId") String userId,
+            @PathVariable("roleName") String roleName) {
+        return ResponseEntity.ok(userService.assignRole(userId, roleName));
+    }
+
+    @DeleteMapping("/{userId}/roles/{roleName}")
+    @PreAuthorize("hasAuthority('" + AppConstants.PERM_ROLE_ASSIGN + "')")
+    public ResponseEntity<UserDto> revokeRole(
+            @PathVariable("userId") String userId,
+            @PathVariable("roleName") String roleName) {
+        return ResponseEntity.ok(userService.revokeRole(userId, roleName));
+    }
+}
