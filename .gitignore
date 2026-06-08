@@ -21,3 +21,12 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Local Agent & Graphify Analysis
+.agents/
+graphify-out/
+
+# Generated PDF Documents & Analysis Reports
+*.pdf
+project_analysis_report.md
+
