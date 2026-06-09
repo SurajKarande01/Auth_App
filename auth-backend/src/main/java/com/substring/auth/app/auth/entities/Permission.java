@@ -13,7 +13,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "permissions")
 public class Permission {
-
+    // Id token generation
     @Id
     private UUID id = UUID.randomUUID();
 
