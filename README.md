@@ -8,7 +8,6 @@
   <a href="https://github.com/SurajKarande01/Auth_App/stargazers"><img src="https://img.shields.io/github/stars/SurajKarande01/Auth_App?style=for-the-badge&color=FFE066&logo=github&logoColor=black" alt="Stars"></a>
   <a href="https://github.com/SurajKarande01/Auth_App/network/members"><img src="https://img.shields.io/github/forks/SurajKarande01/Auth_App?style=for-the-badge&color=4DABF7&logo=github&logoColor=black" alt="Forks"></a>
   <a href="https://github.com/SurajKarande01/Auth_App/issues"><img src="https://img.shields.io/github/issues/SurajKarande01/Auth_App?style=for-the-badge&color=FF6B6B&logo=github&logoColor=black" alt="Issues"></a>
-  <a href="https://github.com/SurajKarande01/Auth_App/blob/main/LICENSE"><img src="https://img.shields.io/github/license/SurajKarande01/Auth_App?style=for-the-badge&color=51CF66&logo=github&logoColor=black" alt="License"></a>
 </p>
 
 ---
@@ -244,8 +243,3 @@ sequenceDiagram
   <a href="https://linkedin.com/in/suraj-karande"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" /></a>
 </p>
 
----
-
-## 🪪 License
-
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
